@@ -9,10 +9,12 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 
-app.post('/', async function(req,res){
-    res.send('Hello World');
-    console.log(req.body);
-    Twitter.TwitterPost({message: req.body.message}, (res) => {console.log(res)});
+app.post('/', function(req,res, next){
+    Twitter.TwitterPost({message: req.body.message}, (response) => {
+        console.log(response);
+        res.send(response)
+    });
+
 });
 
 app.listen(PORT, function(){
