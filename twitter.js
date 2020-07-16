@@ -23,5 +23,30 @@ function TwitterPost(req, callback) {
     })
 }
 
+function getRecentTweet(req,callback){
+    
+}
 
-module.exports = {TwitterPost}
+function TwitterDeletePost(req, callback) {
+    T.post('statuses/destroy/:id',  { id: req.body.id }, (err, data, response) => {
+        if (err) {
+            console.log(err);
+            return callback({
+                message: err.message,
+                code: err.code
+            });
+        }
+        else {
+            return callback({
+                message: 'Message Deleted With the Twitter API',
+                code: 200
+            });
+        }
+    })
+}
+
+function TwitterPostImage(req, callback) {
+
+}
+
+module.exports = {TwitterPost, TwitterDeletePost, TwitterPostImage}

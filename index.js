@@ -9,13 +9,69 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 
-app.post('/', function(req,res, next){
+app.post('/twitter', (req,res) => {
+    if (!req || !req.body || !req.body.message) {
+        res.send({
+            message: 'Invalid Body Data',
+            code: 400
+        })
+    }
     Twitter.TwitterPost({message: req.body.message}, (response) => {
         console.log(response);
         res.send(response)
     });
+});
+
+app.post('/facebook', (req,res) => {
+    if (!req || !req.body || !req.body.message) {
+        res.send({
+            message: 'Invalid Body Data',
+            code: 400
+        })
+    }
 
 });
+
+app.post('/reddit', (req,res) => {
+    if (!req || !req.body || !req.body.message) {
+        res.send({
+            message: 'Invalid Body Data',
+            code: 400
+        })
+    }
+    Twitter.TwitterPost({message: req.body.message}, (response) => {
+        console.log(response);
+        res.send(response)
+    });
+});
+
+app.post('/all', (req,res) => {
+    if (!req || !req.body || !req.body.message) {
+        res.send({
+            message: 'Invalid Body Data',
+            code: 400
+        })
+    }
+    Twitter.TwitterPost({message: req.body.message}, (response) => {
+        console.log(response);
+        res.send(response)
+    });
+});
+
+
+
+app.delete('/twitter', (req, res) => {
+    
+});
+
+app.delete('/facebook', (req, res) => {
+
+});
+
+app.delete('/reddit', (req, res) => {
+
+});
+
 
 app.listen(PORT, function(){
     console.log('Server Running on PORT ' + PORT);

@@ -1,0 +1,2 @@
+
+const Auth = require('./config');
