@@ -58,10 +58,12 @@ app.post('/all', (req,res) => {
     });
 });
 
-
+app.get('/', (req,res) => {
+    const tweet = Twitter.getRecentTweet({count: 1, include_rts: false});
+})
 
 app.delete('/twitter', (req, res) => {
-    
+
 });
 
 app.delete('/facebook', (req, res) => {
