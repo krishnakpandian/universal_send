@@ -1,6 +1,8 @@
 const Twitter = require('./twitter.js');
+const Reddit = require('./reddit.js');
 const express = require('express');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
+const { response } = require('express');
 const app = express();
 const PORT = process.env.port || 3000;
 
@@ -39,10 +41,12 @@ app.post('/reddit', (req,res) => {
             code: 400
         })
     }
-    Twitter.TwitterPost({message: req.body.message}, (response) => {
-        console.log(response);
-        res.send(response)
-    });
+    Reddit.redditPost({  
+    subredditName: 'testingground4bots',
+    title: 'This is a Bot',
+    body: 'This is a Bot Posting'}, (res) => {
+        console.log(response)
+    })
 });
 
 app.post('/all', (req,res) => {
