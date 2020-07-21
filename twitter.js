@@ -77,4 +77,4 @@ function TwitterPostImage(req, callback) {
     })
 }
 
-module.exports = {TwitterPost, TwitterDeletePost, TwitterPostImage, getRecentTweet}
+module.exports = {TwitterPost, TwitterDeletePost, TwitterPostImage}
