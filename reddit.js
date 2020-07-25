@@ -3,8 +3,9 @@ const Auth = require('./config');
 
 const R = new Reddit(Auth.RedditAuthentication);
 
-function redditPost(req, callback) {
-    R.submitSelfpost(req);
+function redditPost(req) {
+    var submission = R.submitSelfpost(req);
+    return submission
 }
 
 module.exports = {redditPost}

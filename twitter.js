@@ -4,6 +4,7 @@ var T = new Twit(Auth.TwitterAuthentication);
 
 function TwitterPost(req, callback) {
     T.post('statuses/update', {status: req.message}, (err) => {
+        console.log(err)
         if (err){
             return callback({
                 message: err.message,
@@ -11,18 +12,20 @@ function TwitterPost(req, callback) {
             });
         }
         else {
+            //console.log(err);
             return callback({
                 message: 'Message Sent from Twitter API',
-                code: 200
+                code: 201,
+                //id: err.id
             });
         }
     })
-    if (callback.code === 200) {
+    if (callback.code === 201) {
         // return Twitter.getRecentTweet({count: 1, include_rts: false});
     }
     return null
 }
-
+T.tweetThread
 async function getRecentTweet(req, callback) {  
     await T.get('statuses/user_timeline', req, (data, err) => { //Fix callback to print error and return data
         if (err){
@@ -38,9 +41,8 @@ async function getRecentTweet(req, callback) {
 }
 
 function TwitterDeletePost(req, callback) {
-    T.post('statuses/destroy/:id',  { id: req.body.id }, (err, data, response) => {
+    T.post('statuses/destroy/:id',  req, (err, data, response) => {
         if (err) {
-            console.log(err);
             return callback({
                 message: err.message,
                 code: err.code

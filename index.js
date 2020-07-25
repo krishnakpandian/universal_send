@@ -17,17 +17,18 @@ app.use(bodyParser.json())
         oneTweet: boolean
     }
 */
-app.post('/twitter', (req,res) => {
+app.post('/twitter', (req, res) => {
     if (!req || !req.body || !req.body.message) {
         res.send({
             message: 'Invalid Body Data',
             code: 400
-        })
+        }).status(400)
+    } else {
+        Twitter.TwitterPost({ message: req.body.message }, (response) => {
+            console.log(response);
+            res.send(response).status(response.code)
+        });
     }
-    Twitter.TwitterPost({message: req.body.message}, (response) => {
-        console.log(response);
-        res.send(response)
-    });
 });
 
 /*
@@ -36,12 +37,12 @@ app.post('/twitter', (req,res) => {
         imagePathway: ""
     }
 */
-app.post('/facebook', (req,res) => {
+app.post('/facebook', (req, res) => {
     if (!req || !req.body || !req.body.message) {
         res.send({
             message: 'Invalid Body Data',
             code: 400
-        })
+        }).status(400)
     }
 
 });
@@ -51,23 +52,34 @@ app.post('/facebook', (req,res) => {
         message: "",
         title: "",
         imagePathway: "",
-        subreddit: ""
+        subreddit: "",
+
     }
 */
-app.post('/reddit', (req,res) => {
-    if (!req || !req.body || !req.body.message) {
+app.post('/reddit', (req, res) => {
+    if (!req || !req.body || !req.body.message || !req.body.title || !req.body.subreddit) {
         res.send({
             message: 'Invalid Body Data',
             code: 400
-        })
+        }).status(400)
     }
-    Reddit.redditPost({  
-    subredditName: 'testingground4bots',
-    title: 'Krishnapi Worked!',
-    body: 'Yeah!'}, (res) => {
-        console.log(response)
+    const submission = Reddit.redditPost({
+        subredditName: req.body.subreddit, // Test in testingground4bots
+        title: req.body.title,
+        body: req.body.message
     })
-    res.send("Cool")
+
+    if (submission != null) {
+        res.send({
+            message: 'Successful Post to Reddit API',
+            code: 201
+        }).status(201)
+    } else {
+        res.send({
+            message: 'Unable to Post to Reddit API',
+            code: 400
+        }).status(400)
+    }
 });
 
 
@@ -81,26 +93,27 @@ app.post('/reddit', (req,res) => {
         fields: {
             oneTweet: true, 
             subreddit: ""
+            title: ""
         }
         message: "",
         title: "",
         imagePathway: ""
     }
 */
-app.post('/all', (req,res) => {
+app.post('/all', (req, res) => {
     if (!req || !req.body || !req.body.message) {
         res.send({
             message: 'Invalid Body Data',
             code: 400
         })
     }
-    Twitter.TwitterPost({message: req.body.message}, (response) => {
+    Twitter.TwitterPost({ message: req.body.message }, (response) => {
         console.log(response);
         res.send(response)
     });
 });
 
-app.get('/', (req,res) => {
+app.get('/', (req, res) => {
     //const tweet = Twitter.getRecentTweet({count: 1, include_rts: false});
     res.send('Hello World')
 })
@@ -112,7 +125,17 @@ app.get('/', (req,res) => {
     }
 */
 app.delete('/twitter', (req, res) => {
-
+    if (!req || !req.body || !req.body.id) {
+        res.send({
+            message: 'Invalid Body Data',
+            code: 400
+        }).status(400)
+    } else {
+        Twitter.TwitterDeletePost({id: req.body.id}, (response) => {
+            console.log(response);
+            res.send(response).status(response.code)
+        });
+    }
 });
 
 /*
@@ -134,6 +157,6 @@ app.delete('/reddit', (req, res) => {
 });
 
 
-app.listen(PORT, function(){
+app.listen(PORT, function() {
     console.log('Server Running on PORT ' + PORT);
 })
