@@ -1,54 +1,35 @@
 const Twit = require('Twit');
 const Auth = require('./config');
+const e = require('express');
+
 var T = new Twit(Auth.TwitterAuthentication);
 
 function TwitterPost(req, callback) {
-    T.post('statuses/update', {status: req.message}, (err) => {
-        console.log(err)
-        if (err){
-            return callback({
-                message: err.message,
-                code: err.code
-            });
-        }
-        else {
-            //console.log(err);
-            return callback({
-                message: 'Message Sent from Twitter API',
-                code: 201,
-                //id: err.id
-            });
-        }
-    })
-    if (callback.code === 201) {
-        // return Twitter.getRecentTweet({count: 1, include_rts: false});
-    }
-    return null
-}
-T.tweetThread
-async function getRecentTweet(req, callback) {  
-    await T.get('statuses/user_timeline', req, (data, err) => { //Fix callback to print error and return data
-        if (err){
-            //console.log(err);
-        }
-        else {
-            console.log("Retrived");
-            return callback(data);
-        }
-    });
-    console.log(callback);
-    return callback;
-}
-
-function TwitterDeletePost(req, callback) {
-    T.post('statuses/destroy/:id',  req, (err, data, response) => {
+    T.post('statuses/update', { status: req.message }, (err, data, response) => {
         if (err) {
             return callback({
                 message: err.message,
                 code: err.code
             });
+        } else {
+            return callback({
+                message: 'Message Sent from Twitter API',
+                code: 201,
+                id: data.id
+            });
         }
-        else {
+    })
+}
+
+
+function TwitterDeletePost(req, callback) {
+    T.post('statuses/destroy/:id', req, (err, data, response) => {
+        if (err) {
+            return callback({
+                message: err.message,
+                code: err.code
+            });
+        } else {
             return callback({
                 message: 'Message Deleted With the Twitter API',
                 code: 200
@@ -58,25 +39,38 @@ function TwitterDeletePost(req, callback) {
 }
 
 function TwitterPostImage(req, callback) {
-    var b64content = fs.readFileSync('/path/to/img', { encoding: 'base64' })
-
-
-    T.post('media/upload', { media_data: b64content }, function (err, data, response) {
-      var mediaIdStr = data.media_id_string
-      var altText = "Small flowers in a planter on a sunny balcony, blossoming."
-      var meta_params = { media_id: mediaIdStr, alt_text: { text: altText } }
-    
-      T.post('media/metadata/create', meta_params, function (err, data, response) {
-        if (!err) {
-          // now we can reference the media and post a tweet (media will attach to the tweet)
-          var params = { status: req.params, media_ids: [mediaIdStr] }
-    
-          T.post('statuses/update', params, function (err, data, response) {
-            console.log(data)
-          })
+    T.post('media/upload', { media_data: req.img }, function(err, data, response) {
+        var mediaIdStr = data.media_id_string;
+        metaParams = {
+            media_id: mediaIdStr,
+            alt_text: req.metaParams.alt_text
         }
-      })
+        T.post('media/metadata/create', metaParams, (err, data, response) => {
+            if (!err) {
+                var params = { status: req.message, media_ids: [mediaIdStr] }
+
+                T.post('statuses/update', params, (err, data, response) => {
+                    if (err) {
+                        callback({
+                            message: err.message,
+                            code: err.code
+                        })
+                    } else {
+                        callback({
+                            message: 'Message Sent from Twitter API',
+                            code: 201,
+                            id: data.id
+                        });
+                    }
+                })
+            } else {
+                callback({
+                    message: err.message,
+                    code: err.code
+                });
+            }
+        })
     })
 }
 
-module.exports = {TwitterPost, TwitterDeletePost, TwitterPostImage}
+module.exports = { TwitterPost, TwitterDeletePost, TwitterPostImage }
