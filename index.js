@@ -2,7 +2,7 @@ const Twitter = require('./twitter.js');
 const Reddit = require('./reddit.js');
 const express = require('express');
 const bodyParser = require('body-parser');
-const { response } = require('express');
+const fs = require('fs');
 const app = express();
 const PORT = process.env.port || 3000;
 
@@ -15,6 +15,10 @@ app.use(bodyParser.json())
         message: "",
         imagePathway: ""
         oneTweet: boolean
+        metaParams: {
+            { 
+                alt_text: { text: altText } }
+        }
     }
 */
 app.post('/twitter', (req, res) => {
@@ -23,11 +27,17 @@ app.post('/twitter', (req, res) => {
             message: 'Invalid Body Data',
             code: 400
         }).status(400)
-    } else {
+    } else if (!req.body.imagePathway) {
         Twitter.TwitterPost({ message: req.body.message }, (response) => {
             console.log(response);
-            res.send(response).status(response.code)
+            res.send(response).status(response.code);
         });
+    }
+    else {
+        var b64content = fs.readFileSync(req.body.imagePathway, { encoding: 'base64' });
+        Twitter.TwitterPostImage({img: b64content, message: req.body.message, metaParams: req.body.metaParams}, (response) => {
+            res.send(response).status(response.code);
+        })
     }
 });
 
