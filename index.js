@@ -1,5 +1,6 @@
 const Twitter = require('./twitter.js');
 const Reddit = require('./reddit.js');
+const Facebook = require('./facebook.js');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
@@ -54,6 +55,10 @@ app.post('/facebook', (req, res) => {
             code: 400
         }).status(400)
     }
+    Facebook.FacebookPost({message: req.body.message}, (response) => {
+        console.log(response);
+        res.send(response)
+    });
 
 });
 
