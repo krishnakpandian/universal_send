@@ -159,7 +159,17 @@ app.delete('/twitter', (req, res) => {
     }
 */
 app.delete('/facebook', (req, res) => {
-
+    if (!req || !req.body || !req.body.id) {
+        res.send({
+            message: 'Invalid Body Data',
+            code: 400
+        }).status(400)
+    } else {
+        Facebook.FacebookDeletePost({id: req.body.id}, (response) => {
+            console.log(response);
+            res.send(response).status(response.code)
+        });
+    }
 });
 
 /*
