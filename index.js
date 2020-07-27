@@ -54,11 +54,19 @@ app.post('/facebook', (req, res) => {
             message: 'Invalid Body Data',
             code: 400
         }).status(400)
+    } else if (!req.body.imagePathway) {
+        Facebook.FacebookPost({message: req.body.message}, (response) => {
+            console.log(response);
+            res.send(response)
+        });
     }
-    Facebook.FacebookPost({message: req.body.message}, (response) => {
-        console.log(response);
-        res.send(response)
-    });
+    else {
+        var b64content = fs.createReadStream(req.body.imagePathway);
+        Facebook.FacebookPostImage({img: b64content, message: req.body.message}, (response) => {
+            res.send(response).status(response.code);
+        })
+    }
+    
 
 });
 

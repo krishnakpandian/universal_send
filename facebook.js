@@ -8,9 +8,11 @@ var fb = FB.extend({appId: Auth.FacebookAuthentication.appId, appSecret: Auth.Fa
 
 function FacebookPost(req, callback) {
     FB.setAccessToken(Auth.FacebookAuthentication.pageToken);
-    
-    var id = Auth.FacebookAuthentication.pageId;
+    //FB.setAccessToken(Auth.FacebookAuthentication.accessToken);
 
+    var id = Auth.FacebookAuthentication.pageId;
+    
+    //me/feed
     FB.api( id + '/feed', 'post', { message: req.message }, function (res) {
         if(!res || res.error) {
             console.log(!res ? 'error occurred' : res.error);
@@ -22,6 +24,7 @@ function FacebookPost(req, callback) {
 
 function FacebookDeletePost(req, callback){
     FB.setAccessToken(Auth.FacebookAuthentication.pageToken);
+    //FB.setAccessToken(Auth.FacebookAuthentication.accessToken);
     
     FB.api(req.id, 'delete', function (res) {
     if(!res || res.error) {
@@ -32,4 +35,21 @@ function FacebookDeletePost(req, callback){
     });
 }
 
-module.exports = {FacebookPost, FacebookDeletePost};
+function FacebookPostImage(req, callback) {
+    FB.setAccessToken(Auth.FacebookAuthentication.pageToken);
+    //FB.setAccessToken(Auth.FacebookAuthentication.accessToken);
+
+    var id = Auth.FacebookAuthentication.pageId;
+    
+    //me/photos
+    FB.api(id + '/photos', 'post', { source: req.img, caption: req.message}, function (res) {
+        if(!res || res.error) {
+            console.log(!res ? 'error occurred' : res.error);
+            return;
+        }
+        console.log('Post Id: ' + res.post_id);
+    });
+    
+}
+
+module.exports = {FacebookPost, FacebookDeletePost, FacebookPostImage};
