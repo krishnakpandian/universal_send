@@ -14,8 +14,8 @@ async function redditPost(req, callback) {
 }
 
 
-async function createImgurLink(req) {
-    var link = await imgur.uploadBase64(req)
+async function createImgurLink(image) {
+    var link = await imgur.uploadBase64(image)
     .then(function (json) {
         return json.data.link
     })
@@ -26,8 +26,8 @@ async function createImgurLink(req) {
     return link;
 }
 
-async function deletePost(req, callback) {
-    const success = await R.getSubmission(req).delete();
+async function deletePost(id, callback) {
+    const success = await R.getSubmission(id).delete();
     callback(success);
 }
 

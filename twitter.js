@@ -1,6 +1,5 @@
 const Twit = require('Twit');
 const Auth = require('./config');
-const e = require('express');
 
 var T = new Twit(Auth.TwitterAuthentication);
 
@@ -39,8 +38,8 @@ function TwitterReply(req, callback) {
     })
 }
 
-function TwitterDeletePost(req, callback) {
-    T.post('statuses/destroy/:id', req, (err, data, response) => {
+function TwitterDeletePost(tweet, callback) {
+    T.post('statuses/destroy/:id', {id: tweet}, (err, data, response) => {
         if (err) {
             return callback({
                 message: err.message,

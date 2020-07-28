@@ -11,12 +11,13 @@ const PORT = process.env.port || 3000;
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 var alphaNumeric = '^[a-zA-Z0-9 .\'?!,-]*$';
-const length = 1000;
+const postLength = 1000;
+const dataLength = 100;
 
 function wordCounter(input) {
     var newInput = input;
     if (input != null) {
-      newInput = input.trim()
+        newInput = input.trim()
     }
 
     var words = newInput ? newInput.split(/\s+/) : [];
@@ -30,7 +31,7 @@ function wordCounter(input) {
     {
         message: "",
         imagePathway: ""
-        metaParams: {
+        metaParams?: {
             { 
                 alt_text: { text: altText } }
         }
@@ -41,30 +42,40 @@ app.post('/twitter', (req, res) => {
         res.send({
             message: 'Invalid Body Data',
             code: 400
-        }).status(400)
+        }).status(400);
+    } else if (req.body.message.length > postLength || req.body.imagePathway.length > dataLength || !req.body.imagePathway.match(alphaNumeric)) {
+        res.send({
+            message: 'Invalid Body Data',
+            code: 400
+        }).status(400);
     } else if (!req.body.imagePathway) {
         if (req.body.message.length > 280) {
             arr = [];
             arr.push()
-            Twitter.TwitterPost({ message: req.body.message.slice(0,275) }, (response) => {
+            Twitter.TwitterPost({ message: req.body.message.slice(0, 275) }, (response) => {
                 if (response.code === 201) {
-                    Twitter.TwitterReply({message: req.body.message, id_str: response.id_str},)
+                    Twitter.TwitterReply({ message: req.body.message, id_str: response.id_str }, )
                 }
-                elif (response.code === 201)
+                elif(response.code === 201)
             });
-        }
-        else {
+        } else {
             Twitter.TwitterPost({ message: req.body.message }, (response) => {
                 console.log(response);
                 res.send(response).status(response.code);
             });
         }
-    }
-    else {
-        var b64content = fs.readFileSync(req.body.imagePathway, { encoding: 'base64' });
-        Twitter.TwitterPostImage({img: b64content, message: req.body.message, metaParams: req.body.metaParams}, (response) => {
-            res.send(response).status(response.code);
-        })
+    } else {
+        try {
+            var b64content = fs.readFileSync(req.body.imagePathway, { encoding: 'base64' });
+            Twitter.TwitterPostImage({ img: b64content, message: req.body.message, metaParams: req.body.metaParams }, (response) => {
+                res.send(response).status(response.code);
+            });
+        } catch (error) {
+            res.send({
+                message: 'Invalid Image Pathway',
+                code: 400
+            }).status(400);
+        }
     }
 });
 
@@ -81,18 +92,17 @@ app.post('/facebook', (req, res) => {
             code: 400
         }).status(400)
     } else if (!req.body.imagePathway) {
-        Facebook.FacebookPost({message: req.body.message}, (response) => {
+        Facebook.FacebookPost({ message: req.body.message }, (response) => {
             console.log(response);
             res.send(response)
         });
-    }
-    else {
+    } else {
         var b64content = fs.createReadStream(req.body.imagePathway);
-        Facebook.FacebookPostImage({img: b64content, message: req.body.message}, (response) => {
+        Facebook.FacebookPostImage({ img: b64content, message: req.body.message }, (response) => {
             res.send(response).status(response.code);
         })
     }
-    
+
 
 });
 
@@ -114,11 +124,10 @@ app.post('/reddit', (req, res) => {
     }
     console.log(req.body.imagePathway);
     var b64content = null;
-    if (req.body.imagePathway != null){
+    if (req.body.imagePathway != null) {
         try {
             b64content = fs.readFileSync(req.body.imagePathway, { encoding: 'base64' });
-        }
-        catch (error){
+        } catch (error) {
             console.log("Invalid Image");
         }
     }
@@ -134,12 +143,11 @@ app.post('/reddit', (req, res) => {
                 code: 201,
                 id: response.name
             }).status(201);
-        }
-        else {
+        } else {
             res.send({
                 message: 'Unable to Post to Reddit API',
                 code: 400
-            }).status(400) 
+            }).status(400)
         }
     })
 
@@ -169,16 +177,7 @@ app.post('/all', (req, res) => {
             code: 400
         })
     }
-    Twitter.TwitterPost({ message: req.body.message }, (response) => {
-        console.log(response);
-        res.send(response)
-    });
 });
-
-app.get('/', (req, res) => {
-    //const tweet = Twitter.getRecentTweet({count: 1, include_rts: false});
-    res.send('Hello World')
-})
 
 
 /*
@@ -187,13 +186,13 @@ app.get('/', (req, res) => {
     }
 */
 app.delete('/twitter', (req, res) => {
-    if (!req || !req.body || !req.body.id) {
+    if (!req || !req.body || !req.body.id || !req.body.id.match(alphaNumeric) || req.body.id.length > dataLength) {
         res.send({
             message: 'Invalid Body Data',
             code: 400
         }).status(400)
     } else {
-        Twitter.TwitterDeletePost({id: req.body.id}, (response) => {
+        Twitter.TwitterDeletePost(req.body.id, (response) => {
             console.log(response);
             res.send(response).status(response.code)
         });
@@ -206,13 +205,13 @@ app.delete('/twitter', (req, res) => {
     }
 */
 app.delete('/facebook', (req, res) => {
-    if (!req || !req.body || !req.body.id) {
+    if (!req || !req.body || !req.body.id || !req.body.id.match(alphaNumeric) || req.body.id.length > dataLength) {
         res.send({
             message: 'Invalid Body Data',
             code: 400
         }).status(400)
     } else {
-        Facebook.FacebookDeletePost({id: req.body.id}, (response) => {
+        Facebook.FacebookDeletePost(req.body.id, (response) => {
             console.log(response);
             res.send(response).status(response.code)
         });
@@ -225,7 +224,7 @@ app.delete('/facebook', (req, res) => {
     }
 */
 app.delete('/reddit', (req, res) => {
-    if (!req || !req.body || !req.body.id){
+    if (!req || !req.body || !req.body.id || !req.body.id.match(alphaNumeric) || req.body.id.length > dataLength) {
         res.send({
             message: 'Invalid Body Data',
             code: 400
@@ -245,7 +244,3 @@ app.delete('/reddit', (req, res) => {
 app.listen(PORT, function() {
     console.log('Server Running on PORT ' + PORT);
 });
-
-
-
-

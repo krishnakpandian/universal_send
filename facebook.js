@@ -22,11 +22,11 @@ function FacebookPost(req, callback) {
     });
 }
 
-function FacebookDeletePost(req, callback){
+function FacebookDeletePost(post, callback){
     FB.setAccessToken(Auth.FacebookAuthentication.pageToken);
     //FB.setAccessToken(Auth.FacebookAuthentication.accessToken);
     
-    FB.api(req.id, 'delete', function (res) {
+    FB.api({id: post}, 'delete', function (res) {
     if(!res || res.error) {
         console.log(!res ? 'error occurred' : res.error);
         return;
