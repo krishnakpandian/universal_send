@@ -91,7 +91,16 @@ app.post('/facebook', (req, res) => {
             message: 'Invalid Body Data',
             code: 400
         }).status(400)
-    } else if (!req.body.imagePathway) {
+    }
+    if(req.body.message.length > 63206){//max char in facebook post
+        res.send({
+            message: 'Post is too long',
+            code: 400
+        }).status(400)
+        console.log("Post is too long");
+        return;
+    }
+    else if (!req.body.imagePathway) {
         Facebook.FacebookPost({ message: req.body.message }, (response) => {
             console.log(response);
             res.send(response)
@@ -103,6 +112,10 @@ app.post('/facebook', (req, res) => {
             b64content = fs.createReadStream(req.body.imagePathway);
         }
         catch (error){
+            res.send({
+                message: 'Invalid Image',
+                code: 400
+            }).status(400)
             console.log("Invalid Image");
             return;
         }
