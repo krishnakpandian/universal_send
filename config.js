@@ -9,6 +9,7 @@ const TwitterAuthentication = {
 
 const FacebookAuthentication = {
     appId: process.env.FACEBOOK_APP_ID,
+    accessToken:process.env.FACEBOOK_ACCESS_TOKEN,
     pageId: process.env.FACEBOOK_PAGE_ID,
     pageToken: process.env.FACEBOOK_PAGE_TOKEN,
     appSecret: process.env.FACEBOOK_APP_SECRET,

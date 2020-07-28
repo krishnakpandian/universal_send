@@ -96,9 +96,17 @@ app.post('/facebook', (req, res) => {
             console.log(response);
             res.send(response)
         });
-    } else {
-        var b64content = fs.createReadStream(req.body.imagePathway);
-        Facebook.FacebookPostImage({ img: b64content, message: req.body.message }, (response) => {
+    }
+    else {
+        var b64content = null;
+        try {
+            b64content = fs.createReadStream(req.body.imagePathway);
+        }
+        catch (error){
+            console.log("Invalid Image");
+            return;
+        }
+        Facebook.FacebookPostImage({img: b64content, message: req.body.message}, (response) => {
             res.send(response).status(response.code);
         })
     }
