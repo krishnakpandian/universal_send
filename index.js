@@ -10,12 +10,26 @@ const PORT = process.env.port || 3000;
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+var alphaNumeric = '^[a-zA-Z0-9 .\'?!,-]*$';
+const length = 1000;
+
+function wordCounter(input) {
+    var newInput = input;
+    if (input != null) {
+      newInput = input.trim()
+    }
+
+    var words = newInput ? newInput.split(/\s+/) : [];
+    var wordCount = words ? words.length : 0;
+    return words
+}
+
+
 
 /*
     {
         message: "",
         imagePathway: ""
-        oneTweet: boolean
         metaParams: {
             { 
                 alt_text: { text: altText } }
@@ -29,10 +43,22 @@ app.post('/twitter', (req, res) => {
             code: 400
         }).status(400)
     } else if (!req.body.imagePathway) {
-        Twitter.TwitterPost({ message: req.body.message }, (response) => {
-            console.log(response);
-            res.send(response).status(response.code);
-        });
+        if (req.body.message.length > 280) {
+            arr = [];
+            arr.push()
+            Twitter.TwitterPost({ message: req.body.message.slice(0,275) }, (response) => {
+                if (response.code === 201) {
+                    Twitter.TwitterReply({message: req.body.message, id_str: response.id_str},)
+                }
+                elif (response.code === 201)
+            });
+        }
+        else {
+            Twitter.TwitterPost({ message: req.body.message }, (response) => {
+                console.log(response);
+                res.send(response).status(response.code);
+            });
+        }
     }
     else {
         var b64content = fs.readFileSync(req.body.imagePathway, { encoding: 'base64' });
@@ -86,10 +112,21 @@ app.post('/reddit', (req, res) => {
             code: 400
         }).status(400)
     }
+    console.log(req.body.imagePathway);
+    var b64content = null;
+    if (req.body.imagePathway != null){
+        try {
+            b64content = fs.readFileSync(req.body.imagePathway, { encoding: 'base64' });
+        }
+        catch (error){
+            console.log("Invalid Image");
+        }
+    }
     const submission = Reddit.redditPost({
         subredditName: req.body.subreddit, // Test in testingground4bots
         title: req.body.title,
-        body: req.body.message
+        text: req.body.message,
+        image: b64content
     })
 
     if (submission != null) {
@@ -114,7 +151,6 @@ app.post('/reddit', (req, res) => {
             reddit: boolean
         }
         fields: {
-            oneTweet: true, 
             subreddit: ""
             title: ""
         }
@@ -192,4 +228,8 @@ app.delete('/reddit', (req, res) => {
 
 app.listen(PORT, function() {
     console.log('Server Running on PORT ' + PORT);
-})
+});
+
+
+
+

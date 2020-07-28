@@ -15,12 +15,29 @@ function TwitterPost(req, callback) {
             return callback({
                 message: 'Message Sent from Twitter API',
                 code: 201,
-                id: data.id
+                id: data.id,
+                id_str: data.id_str
             });
         }
     })
 }
 
+function TwitterReply(req, callback) {
+    T.post('statuses/update', { status: req.message, in_reply_to_status_id: req.id }, (err, data, response) => {
+        if (err) {
+            return callback({
+                message: err.message,
+                code: err.code
+            });
+        } else {
+            return callback({
+                message: 'Message Sent from Twitter API',
+                code: 201,
+                id: data.id
+            });
+        }
+    })
+}
 
 function TwitterDeletePost(req, callback) {
     T.post('statuses/destroy/:id', req, (err, data, response) => {
@@ -73,4 +90,4 @@ function TwitterPostImage(req, callback) {
     })
 }
 
-module.exports = { TwitterPost, TwitterDeletePost, TwitterPostImage }
+module.exports = { TwitterPost, TwitterDeletePost, TwitterPostImage, TwitterReply }
