@@ -6,12 +6,11 @@ var FB = require('fb');
 FB.options({version: 'v2.4'});
 var fb = FB.extend({appId: Auth.FacebookAuthentication.appId, appSecret: Auth.FacebookAuthentication.appSecret});
 
-function FacebookPost(req, callback) {
-    FB.setAccessToken(Auth.FacebookAuthentication.pageToken);
-    //FB.setAccessToken(Auth.FacebookAuthentication.accessToken);
+FB.setAccessToken(Auth.FacebookAuthentication.pageToken);
+//FB.setAccessToken(Auth.FacebookAuthentication.accessToken);
+var id = Auth.FacebookAuthentication.pageId;
 
-    var id = Auth.FacebookAuthentication.pageId;
-    
+function FacebookPost(req, callback) {
     //me/feed
     FB.api( id + '/feed', 'post', { message: req.message }, function (res) {
         if(!res || res.error) {
@@ -23,9 +22,6 @@ function FacebookPost(req, callback) {
 }
 
 function FacebookDeletePost(post, callback){
-    FB.setAccessToken(Auth.FacebookAuthentication.pageToken);
-    //FB.setAccessToken(Auth.FacebookAuthentication.accessToken);
-    
     FB.api({id: post}, 'delete', function (res) {
     if(!res || res.error) {
         console.log(!res ? 'error occurred' : res.error);
@@ -35,12 +31,7 @@ function FacebookDeletePost(post, callback){
     });
 }
 
-function FacebookPostImage(req, callback) {
-    FB.setAccessToken(Auth.FacebookAuthentication.pageToken);
-    //FB.setAccessToken(Auth.FacebookAuthentication.accessToken);
-
-    var id = Auth.FacebookAuthentication.pageId;
-    
+function FacebookPostImage(req, callback) {    
     //me/photos
     FB.api(id + '/photos', 'post', { source: req.img, caption: req.message}, function (res) {
         if(!res || res.error) {
