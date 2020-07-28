@@ -5,12 +5,12 @@ const Auth = require('./config');
 const R = new Reddit(Auth.RedditAuthentication);
 imgur.setClientId(process.env.IMGUR_CLIENT_ID);
 
-async function redditPost(req) {
+async function redditPost(req, callback) {
     if (req.image){
         req.text +=  ' ' + await createImgurLink(req.image);
     }
-    var submission = R.submitSelfpost(req);
-    return submission
+    var submission = await R.submitSelfpost(req);
+    callback(submission);
 }
 
 
@@ -26,6 +26,9 @@ async function createImgurLink(req) {
     return link;
 }
 
+async function deletePost(req, callback) {
+    const success = await R.getSubmission(req).delete();
+    callback(success);
+}
 
-
-module.exports = {redditPost}
+module.exports = {redditPost, deletePost}

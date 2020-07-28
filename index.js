@@ -71,7 +71,7 @@ app.post('/twitter', (req, res) => {
 /*
     {
         message: "",
-        imagePathway: ""
+        imagePathway?: ""
     }
 */
 app.post('/facebook', (req, res) => {
@@ -100,8 +100,8 @@ app.post('/facebook', (req, res) => {
     {
         message: "",
         title: "",
-        imagePathway: "",
-        subreddit: "",
+        imagePathway?: "",
+        subreddit: ""
 
     }
 */
@@ -127,19 +127,22 @@ app.post('/reddit', (req, res) => {
         title: req.body.title,
         text: req.body.message,
         image: b64content
+    }, (response) => {
+        if (response.Submission != null) {
+            res.send({
+                message: 'Successful Post to Reddit API',
+                code: 201,
+                id: response.name
+            }).status(201);
+        }
+        else {
+            res.send({
+                message: 'Unable to Post to Reddit API',
+                code: 400
+            }).status(400) 
+        }
     })
 
-    if (submission != null) {
-        res.send({
-            message: 'Successful Post to Reddit API',
-            code: 201
-        }).status(201)
-    } else {
-        res.send({
-            message: 'Unable to Post to Reddit API',
-            code: 400
-        }).status(400)
-    }
 });
 
 
@@ -156,7 +159,7 @@ app.post('/reddit', (req, res) => {
         }
         message: "",
         title: "",
-        imagePathway: ""
+        imagePathway?: ""
     }
 */
 app.post('/all', (req, res) => {
@@ -222,6 +225,19 @@ app.delete('/facebook', (req, res) => {
     }
 */
 app.delete('/reddit', (req, res) => {
+    if (!req || !req.body || !req.body.id){
+        res.send({
+            message: 'Invalid Body Data',
+            code: 400
+        }).status(400)
+    }
+    Reddit.deletePost(req.body.id, (response) => {
+        console.log(response);
+        res.send({
+            message: 'Successful Delete with Reddit API',
+            code: 200
+        }).status(200)
+    });
 
 });
 
