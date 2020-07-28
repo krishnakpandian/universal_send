@@ -24,9 +24,7 @@ function wordCounter(input) {
     return words
 }
 
-function findWordDistribution(message, left, right){
-    
-}
+
 
 /*
     {
@@ -46,11 +44,13 @@ app.post('/twitter', (req, res) => {
         }).status(400)
     } else if (!req.body.imagePathway) {
         if (req.body.message.length > 280) {
-            const initial = findWordDistribution(req.body.message);
-
-            Twitter.TwitterPost({ message: req.body.message }, (response) => {
-                console.log(response);
-                res.send(response).status(response.code);
+            arr = [];
+            arr.push()
+            Twitter.TwitterPost({ message: req.body.message.slice(0,275) }, (response) => {
+                if (response.code === 201) {
+                    Twitter.TwitterReply({message: req.body.message, id_str: response.id_str},)
+                }
+                elif (response.code === 201)
             });
         }
         else {
@@ -112,10 +112,21 @@ app.post('/reddit', (req, res) => {
             code: 400
         }).status(400)
     }
+    console.log(req.body.imagePathway);
+    var b64content = null;
+    if (req.body.imagePathway != null){
+        try {
+            b64content = fs.readFileSync(req.body.imagePathway, { encoding: 'base64' });
+        }
+        catch (error){
+            console.log("Invalid Image");
+        }
+    }
     const submission = Reddit.redditPost({
         subredditName: req.body.subreddit, // Test in testingground4bots
         title: req.body.title,
-        body: req.body.message
+        text: req.body.message,
+        image: b64content
     })
 
     if (submission != null) {

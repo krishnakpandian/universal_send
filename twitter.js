@@ -90,4 +90,4 @@ function TwitterPostImage(req, callback) {
     })
 }
 
-module.exports = { TwitterPost, TwitterDeletePost, TwitterPostImage }
+module.exports = { TwitterPost, TwitterDeletePost, TwitterPostImage, TwitterReply }
