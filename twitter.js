@@ -1,7 +1,9 @@
 const Twit = require('Twit');
+const { TwitThread } = require('twit-thread');
 const Auth = require('./config');
 
 var T = new Twit(Auth.TwitterAuthentication);
+var thread = new TwitThread(Auth.TwitterAuthentication);
 
 function TwitterPost(req, callback) {
     T.post('statuses/update', { status: req.message }, (err, data, response) => {
@@ -21,25 +23,60 @@ function TwitterPost(req, callback) {
     })
 }
 
-function TwitterReply(req, callback) {
-    T.post('statuses/update', { status: req.message, in_reply_to_status_id: req.id }, (err, data, response) => {
-        if (err) {
+async function TwitterThread(tweetData, callback) {
+    if (tweetData[0].options.media_data != null) {
+        var data;
+        try {
+            data = await thread.tweetThread(tweetData);
+        } catch (error) {
             return callback({
-                message: err.message,
-                code: err.code
+                message: "Failed to Post to Thread",
+                code: 400
             });
-        } else {
+        }
+        console.log(data);
+        if (data && data[0]) {
             return callback({
                 message: 'Message Sent from Twitter API',
                 code: 201,
-                id: data.id
+                id: data[0].id,
+                id_str: data[0].id_str
+            })
+        } else {
+            return callback({
+                message: "Failed to Post to Thread",
+                code: 400
             });
         }
-    })
+    } else {
+        var data;
+        try {
+            data = await thread.tweetThread(tweetData);
+        } catch (error) {
+            return callback({
+                message: "Failed to Post to Thread",
+                code: 400
+            });
+        }
+        if (data && data[0]) {
+            return callback({
+                message: 'Message Sent from Twitter API',
+                code: 201,
+                id: data[0].id,
+                id_str: data[0].id_str
+            })
+        } else {
+            return callback({
+                message: "Failed to Post to Thread",
+                code: 400
+            });
+        }
+    }
+
 }
 
 function TwitterDeletePost(tweet, callback) {
-    T.post('statuses/destroy/:id', {id: tweet}, (err, data, response) => {
+    T.post('statuses/destroy/:id', { id: tweet }, (err, data, response) => {
         if (err) {
             return callback({
                 message: err.message,
@@ -89,4 +126,5 @@ function TwitterPostImage(req, callback) {
     })
 }
 
-module.exports = { TwitterPost, TwitterDeletePost, TwitterPostImage, TwitterReply }
+
+module.exports = { TwitterPost, TwitterDeletePost, TwitterPostImage, TwitterThread }

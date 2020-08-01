@@ -14,15 +14,23 @@ var alphaNumeric = '^[a-zA-Z0-9 .\'?!,-]*$';
 const postLength = 1000;
 const dataLength = 100;
 
-function wordCounter(input) {
-    var newInput = input;
-    if (input != null) {
-        newInput = input.trim()
-    }
+function chunkString(str, len) {
+    const size = Math.ceil(str.length / len)
+    const r = Array(size)
+    let offset = 0
 
-    var words = newInput ? newInput.split(/\s+/) : [];
-    var wordCount = words ? words.length : 0;
-    return words
+    for (let i = 0; i < size; i++) {
+        r[i] = str.substr(offset, len)
+        offset += len
+    }
+    arr = [];
+    for (let j = 0; j < r.length; j++) {
+        if (j == 0) {
+            arr.push({ text: r[j], options: { media_data: null } });
+        }
+        arr.push({ text: r[j] });
+    }
+    return arr
 }
 
 
@@ -43,27 +51,31 @@ app.post('/twitter', (req, res) => {
             message: 'Invalid Body Data',
             code: 400
         }).status(400);
-    } else if (req.body.message.length > postLength || req.body.imagePathway.length > dataLength || !req.body.imagePathway.match(alphaNumeric)) {
+    } else if (req.body.message.length > postLength || (req.body.imagePathway && req.body.imagePathway.length > dataLength)) {
         res.send({
             message: 'Invalid Body Data',
             code: 400
         }).status(400);
-    } else if (!req.body.imagePathway) {
-        if (req.body.message.length > 280) {
-            arr = [];
-            arr.push()
-            Twitter.TwitterPost({ message: req.body.message.slice(0, 275) }, (response) => {
-                if (response.code === 201) {
-                    Twitter.TwitterReply({ message: req.body.message, id_str: response.id_str }, )
-                }
-                elif(response.code === 201)
-            });
-        } else {
-            Twitter.TwitterPost({ message: req.body.message }, (response) => {
-                console.log(response);
-                res.send(response).status(response.code);
-            });
+    } else if (req.body.message.length > 280) { //format req
+        var b64content;
+        arr = chunkString(req.body.message, 275);
+        if (req.body.imagePathway) {
+            try {
+                b64content = fs.readFileSync(req.body.imagePathway, { encoding: 'base64' });
+            } catch (error) {
+                console.log(error);
+            }
         }
+        arr[0].options.media_data = b64content;
+
+        Twitter.TwitterThread(arr, (response) => {
+            res.send(response).status(response.code);
+        });
+    } else if (!req.body.imagePathway) {
+        Twitter.TwitterPost({ message: req.body.message }, (response) => {
+            console.log(response);
+            res.send(response).status(response.code);
+        });
     } else {
         try {
             var b64content = fs.readFileSync(req.body.imagePathway, { encoding: 'base64' });
@@ -92,26 +104,23 @@ app.post('/facebook', (req, res) => {
             code: 400
         }).status(400)
     }
-    if(req.body.message.length > 63206){//max char in facebook post
+    if (req.body.message.length > 63206) { //max char in facebook post
         res.send({
             message: 'Post is too long',
             code: 400
         }).status(400)
         console.log("Post is too long");
         return;
-    }
-    else if (!req.body.imagePathway) {
+    } else if (!req.body.imagePathway) {
         Facebook.FacebookPost({ message: req.body.message }, (response) => {
             console.log(response);
             res.send(response)
         });
-    }
-    else {
+    } else {
         var b64content = null;
         try {
             b64content = fs.createReadStream(req.body.imagePathway);
-        }
-        catch (error){
+        } catch (error) {
             res.send({
                 message: 'Invalid Image',
                 code: 400
@@ -119,7 +128,7 @@ app.post('/facebook', (req, res) => {
             console.log("Invalid Image");
             return;
         }
-        Facebook.FacebookPostImage({img: b64content, message: req.body.message}, (response) => {
+        Facebook.FacebookPostImage({ img: b64content, message: req.body.message }, (response) => {
             res.send(response).status(response.code);
         })
     }

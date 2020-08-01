@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Krishna Pandian",
+  "author": "Krishna Pandian, Alex Ngo",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -17,6 +17,7 @@
     "fs": "0.0.1-security",
     "imgur": "^0.3.1",
     "snoowrap": "^1.21.0",
-    "twit": "^2.2.11"
+    "twit": "^2.2.11",
+    "twit-thread": "^2.1.0"
   }
 }
