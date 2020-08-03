@@ -4,6 +4,7 @@ const Facebook = require('./facebook.js');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
+const { TwitterPost } = require('./twitter.js');
 const app = express();
 const PORT = process.env.port || 3000;
 
@@ -104,7 +105,7 @@ app.post('/facebook', (req, res) => {
             code: 400
         }).status(400)
     }
-    if (req.body.message.length > 63206) { //max char in facebook post
+    if (req.body.message.length > postLength) { //max char in facebook post
         res.send({
             message: 'Post is too long',
             code: 400
@@ -196,17 +197,76 @@ app.post('/reddit', (req, res) => {
             title: ""
         }
         message: "",
-        title: "",
         imagePathway?: ""
     }
 */
 app.post('/all', (req, res) => {
-    if (!req || !req.body || !req.body.message) {
+    //console.log(req.body);
+    if (!req || !req.body || !req.body.message || req.body.message.length > postLength || (req.body.imagePathway && req.body.imagePathway.length > dataLength)) {
         res.send({
             message: 'Invalid Body Data',
             code: 400
         })
     }
+    const message = req.body.message;
+    var b64content = null;
+    try {
+        b64content = fs.readFileSync(req.body.imagePathway, { encoding: 'base64' });
+    } catch (error) {
+        console.log("Invalid Image");
+    }
+    let responses = [];
+    if (req.body.platforms.twitter) {
+        if (req.body.message.length > 280){
+            arr = chunkString(message);
+            arr[0].options.media_data = b64content;
+            Twitter.TwitterThread(arr, (response) => {
+                console.log(response);
+            });
+        }
+        else {
+            if (b64content){
+                Twitter.TwitterPostImage({img: b64content, message: req.body.message}, (response) => {
+                    console.log(response);
+                });
+            }
+            else {
+                Twitter.TwitterPost({message: req.body.message}, (response) => {
+                    console.log(response);
+                });
+            }
+        }
+    }
+    if (req.body.platforms.facebook) {
+        if (b64content) {
+            Facebook.FacebookPostImage({ img: b64content, message: req.body.message }, (response) => {
+                if (response.code != 201) {
+                    return res.send(response).status(response.code);
+                }
+            })
+        }
+        else {
+            Facebook.FacebookPost({ message: req.body.message }, (response) => {
+                console.log(response)
+            });
+        }
+    }
+    if (req.body.platforms.reddit) {
+        const reddit = Reddit.redditPost({
+            subredditName: req.body.fields.subreddit, 
+            title: req.body.fields.title,
+            text: req.body.message,
+            image: b64content
+        }, (response) => {
+            if (response.code != 201) {
+                console.log(response)
+            }
+        })
+    }
+    res.send({
+        code: 201,
+        message: "Successful Post",
+    }).status(201);
 });
 
 
